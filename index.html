@@ -1,37 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Watchmode Documentation Snippet Test</title>
-</head>
-<body>
-    <h1>Watchmode API Test (Documentation Code)</h1>
-    <p>Open your browser's Developer Console (F12) to see the exact printed JSON data object.</p>
-
-    <script>
-        // Wrapping the snippet in an instantly invoked function to allow top-level 'await'
-        (async () => {
-            console.log("Running fetch exactly as defined in the documentation...");
-
-            const apiKey = 'lCEVkd6OJ6WSliMMHLpkbsQbChmwhXyKAFzI8Por';
-            const searchField = 'name';
-            const searchValue = 'La Grazia';
-            
-            const url = `https://api.watchmode.com/v1/search/?apiKey=${apiKey}&search_field=${searchField}&search_value=${encodeURIComponent(searchValue)}`;
-
-            try {
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`Network problem! Server responded with status: ${response.status}`);
-                }
-
-                const json = await response.json();
-                console.log("API Success:", json);
-            } catch (error) {
-                console.error("API Failed:", error.message);
-            }
-        })();
-    </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>now-showing</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
