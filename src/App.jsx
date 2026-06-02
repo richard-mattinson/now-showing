@@ -21,7 +21,7 @@ function App() {
   // Your UK favourite platforms list
   const [favourites] = useState(["Netflix", "Amazon Prime", "Disney+", "BBC iPlayer", "Now TV", "Apple TV"]);
 
-  const apiKey = "lCEVkd6OJ6WSliMMHLpkbsQbChmwhXyKAFzI8Por";
+  const apiKey = "import.meta.env.WATCHMODE_API_KEY";
 
   // Sync watchlist data array to local storage
   useEffect(() => {
