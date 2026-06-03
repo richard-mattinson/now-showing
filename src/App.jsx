@@ -8,7 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Load watchlist from Local Storage on startup
+  // load watchlist from local storage on startup
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem("now-showing-watchlist");
     return saved ? JSON.parse(saved) : [];
@@ -86,7 +86,7 @@ function App() {
     setBatchLoading(true);
     const newAvailabilityResults = {};
 
-    // Loop through each movie in your tracking array
+    // loop through each movie in your tracking array
     for (const movie of watchlist) {
       const movieId = movie.id;
 
@@ -96,7 +96,8 @@ function App() {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Status: ${response.status}`);
         const sourcesData = await response.json();
-
+        console.log("source data", sourcesData);
+        
         // filter to free and subscription films available on streaming
         const ukStreaming = sourcesData.filter((source) => (source.type === "sub" || source.type === "free") && (source.region === "UK" || source.region === "GB"));
 
@@ -117,7 +118,7 @@ function App() {
     <div className="container">
       <div id="control_bar">
         <div className="app_title">Now</div>
-        <i className="bi bi-camera-reels"></i>
+        <i className="bi bi-camera-reels" id="app_icon"></i>
         <div className="app_title">Showing</div>
       </div>
 
@@ -181,7 +182,7 @@ function App() {
                     <div className="inline-availability" style={{ marginTop: "2px" }}>
                       {movieSources.length === 0 ? (
                         <p className="alert-box negative" style={{ fontSize: "10px", padding: "2px" }}>
-                          Not streaming on UK streaming right now.
+                          Not currently streaming in the UK.
                         </p>
                       ) : (
                         <div className="services-grid">

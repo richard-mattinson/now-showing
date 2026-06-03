@@ -3,8 +3,8 @@
     justify-items: center;
     align-items: center;
     background: grey;
-    height: 40px;
-    margin: 0 0 10px 0;
+    height: 60px;
+    margin: 0 0 20px 0;
     justify-content: center;
     align-content: center;
     padding: 5px;
@@ -12,8 +12,12 @@
 }
 
 .app_title {
-    font-size: 24px;
+    font-size: 40px;
     margin: 0 10px 0 10px;
+}
+
+#app_icon {
+    font-size: 40px;
 }
 
 #search_bar {
@@ -22,6 +26,7 @@
 }
 
 #search_box {
+    font-size: 20px;
     padding: 2px 5px;
     border-width: 1px;
     border-radius: 5px 0 0 5px;
@@ -29,6 +34,7 @@
 }
 
 #search_button {
+    font-size: 20px;
     padding: 2px 5px;
     border-width: 1px;
     border-radius: 0 5px 5px 0;
@@ -38,12 +44,13 @@
 }
 
 #check_movies_button {
+    font-size: 20px;
     padding: 2px 5px;
     border-width: 1px;
     border-radius: 5px;
     background-color: #428BCA;
     color: white;
-    margin: 0 10px 0 0;
+    margin: 0 10px 5px 0;
     padding: 2px 10px 2px 10px;
     font-family: "poppins";
 }
@@ -80,7 +87,8 @@
 .platform-name {
     font-size: 15px;
     padding: 0 5px 0 0;
-    border-right: 1px solid grey;
+    border-right: 1px solid rgb(188, 188, 188);
+    color: #428BCA;
 }
 
 .badge-type {
@@ -89,7 +97,8 @@
 }
 
 .btn-delete {
-    padding: 5px 5px 5px 5px;
+    font-size: 20px;
+    padding: 4px 10px 3px 10px;
     border-color: whitesmoke;
     background: crimson;
     color: white;
