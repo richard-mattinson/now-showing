@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 function App() {
   const [movieName, setMovieName] = useState("");
@@ -13,17 +14,17 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Store the streaming availability results for all checked movies
-  // Format will be: { [movieId]: [array of UK sources] }
+  // store the streaming availability results for all checked movies
+  // format: { [movieId]: [array of UK sources] }
   const [watchlistAvailability, setWatchlistAvailability] = useState({});
   const [batchLoading, setBatchLoading] = useState(false);
 
-  // Your UK favourite platforms list
+  // your UK favourite platforms list
   const [favourites] = useState(["Netflix", "Amazon Prime", "Disney+", "BBC iPlayer", "Now TV", "Apple TV"]);
 
   const apiKey = import.meta.env.VITE_WATCHMODE_API_KEY;
 
-  // Sync watchlist data array to local storage
+  // sync watchlist data array to local storage
   useEffect(() => {
     localStorage.setItem("now-showing-watchlist", JSON.stringify(watchlist));
   }, [watchlist]);
@@ -76,7 +77,6 @@ function App() {
     setWatchlistAvailability(updatedAvailability);
   };
 
-  // ➡️ UPDATED BATCH FUNCTION USING YOUR EXACT SPECIFIED URL STRING STRATEGY
   const checkAllUKAvailability = async () => {
     if (watchlist.length === 0) {
       alert("Your watchlist is empty! Add movies first.");
@@ -90,7 +90,6 @@ function App() {
     for (const movie of watchlist) {
       const movieId = movie.id;
 
-      // ➡️ YOUR EXACT SPECIFIED STRING RUNNING WITHOUT MODIFICATIONS
       const url = `https://api.watchmode.com/v1/title/${movieId}/sources/?apiKey=${apiKey}`;
 
       try {
@@ -98,35 +97,40 @@ function App() {
         if (!response.ok) throw new Error(`Status: ${response.status}`);
         const sourcesData = await response.json();
 
-        // Keep free/subscription options and isolate to the UK region entries
+        // filter to free and subscription films available on streaming
         const ukStreaming = sourcesData.filter((source) => (source.type === "sub" || source.type === "free") && (source.region === "UK" || source.region === "GB"));
 
-        // Save the results map indexed by this specific movie ID
+        // save the results map indexed by this specific movie ID
         newAvailabilityResults[movieId] = ukStreaming;
       } catch (err) {
         console.error(`Could not fetch data for ${movie.name}:`, err.message);
-        newAvailabilityResults[movieId] = []; // Fallback to empty on error
+        newAvailabilityResults[movieId] = []; // fallback to empty on error
       }
     }
 
-    // Save the global data object map to component state
+    // save the global data object map to component state
     setWatchlistAvailability(newAvailabilityResults);
     setBatchLoading(false);
   };
 
   return (
     <div className="container">
-      <h1>🎬 Now Showing</h1>
+      <div id="control_bar">
+        <div className="app_title">Now</div>
+        <i className="bi bi-camera-reels"></i>
+        <div className="app_title">Showing</div>
+      </div>
 
       {/* SEARCH INTERFACE */}
-      <div className="card">
-        <h3>Find a Film</h3>
+      <div className="card" id="search_bar">
         <form onSubmit={handleSearch} className="search-form">
-          <input type="text" placeholder="Have you heard of..?" value={movieName} onChange={(e) => setMovieName(e.target.value)} />
-          <button type="submit">Search</button>
+          <input id="search_box" type="text" placeholder="Have you heard of..?" value={movieName} onChange={(e) => setMovieName(e.target.value)} />
+          <button type="submit" id="search_button">
+            Search
+          </button>
         </form>
         {loading && <p>Connecting to Watchmode API...</p>}
-        {error && <p className="error-text">⚠️ {error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
         {results.length > 0 && (
           <ul className="list search-results">
@@ -135,8 +139,8 @@ function App() {
                 <span>
                   <strong>{movie.name}</strong> ({movie.year})
                 </span>
-                <button onClick={() => trackMovie(movie)} className="btn-track">
-                  ➕ Track
+                <button id="track_button" onClick={() => trackMovie(movie)} className="btn-track">
+                  Track
                 </button>
               </li>
             ))}
@@ -146,11 +150,11 @@ function App() {
 
       {/* PERSISTENT WATCHLIST */}
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid #eaeaea", paddingBottom: "8px" }}>
-          <h3 style={{ margin: 0, border: "none" }}>Your Saved Watchlist</h3>
+        <div id="watchlist_bar">
+          <h3>Watchlist</h3>
           {watchlist.length > 0 && (
-            <button onClick={checkAllUKAvailability} className="btn-check-all" disabled={batchLoading} style={{ background: "#17a2b8", color: "white" }}>
-              {batchLoading ? "🔄 Scanning All..." : "🔍 Check All Movies"}
+            <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
+              {batchLoading ? "Scanning All..." : "Check Availability"}
             </button>
           )}
         </div>
@@ -158,26 +162,26 @@ function App() {
         {watchlist.length === 0 ? (
           <p className="placeholder-text">Not tracking any movies yet. Search and track one above!</p>
         ) : (
-          <ul className="list">
+          <div className="list">
             {watchlist.map((movie) => {
               const movieSources = watchlistAvailability[movie.id];
               return (
-                <li key={movie.id} className="watchlist-item-wrapper" style={{ display: "block", borderBottom: "1px solid #eee", padding: "15px 0" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={movie.id} className="watchlist-item-wrapper">
+                  <div className="movie_title">
                     <div>
                       <strong>{movie.name}</strong> <small>({movie.year})</small>
                     </div>
                     <button onClick={() => untrackMovie(movie.id)} className="btn-delete">
-                      ❌
+                      <i class="bi bi-trash"></i>
                     </button>
                   </div>
 
                   {/* INLINE STREAMING STATUS RESULTS FOR THIS SPECIFIC MOVIE */}
                   {movieSources && (
-                    <div className="inline-availability" style={{ marginTop: "10px" }}>
+                    <div className="inline-availability" style={{ marginTop: "2px" }}>
                       {movieSources.length === 0 ? (
-                        <p className="alert-box negative" style={{ fontSize: "13px", padding: "6px" }}>
-                          Not streaming on standard UK subscription formats right now.
+                        <p className="alert-box negative" style={{ fontSize: "10px", padding: "2px" }}>
+                          Not streaming on UK streaming right now.
                         </p>
                       ) : (
                         <div className="services-grid">
@@ -195,10 +199,10 @@ function App() {
                       )}
                     </div>
                   )}
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
       </div>
     </div>

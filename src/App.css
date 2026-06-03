@@ -1,0 +1,99 @@
+#control_bar {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    background: grey;
+    height: 40px;
+    margin: 0 0 10px 0;
+    justify-content: center;
+    align-content: center;
+    padding: 5px;
+    color: white;
+}
+
+.app_title {
+    font-size: 24px;
+    margin: 0 10px 0 10px;
+}
+
+#search_bar {
+    margin: 0 0 10px 0;
+    font-family: "poppins";
+}
+
+#search_box {
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 5px 0 0 5px;
+    font-family: "poppins";
+}
+
+#search_button {
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 0 5px 5px 0;
+    background-color: rgb(106, 106, 106);
+    color: white;
+    font-family: "poppins";
+}
+
+#check_movies_button {
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 5px;
+    background-color: #428BCA;
+    color: white;
+    margin: 0 10px 0 0;
+    padding: 2px 10px 2px 10px;
+    font-family: "poppins";
+}
+
+#watchlist_bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid whitesmoke; 
+    padding-bottom: 2px;
+}
+
+#track_button {
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 0 5px 5px 0;
+    background-color: rgb(106, 106, 106);
+    color: white;
+}
+
+.watchlist-item-wrapper {
+    display: block;
+    border-bottom: 1px solid whitesmoke;
+    margin: 0px 10px 0px 10px;
+    padding: 5px 0 2px 0;
+}
+
+.movie_title {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.platform-name {
+    font-size: 15px;
+    padding: 0 5px 0 0;
+    border-right: 1px solid grey;
+}
+
+.badge-type {
+    font-size: 15px;
+    padding: 0 0 0 5px;
+}
+
+.btn-delete {
+    padding: 5px 5px 5px 5px;
+    border-color: whitesmoke;
+    background: crimson;
+    color: white;
+    border-width: 1px;
+    border-radius: 5px;
+    margin: 0 5px 0 0;
+}
