@@ -208,7 +208,9 @@ function App() {
                                     sub: "Subscription",
                                     rent: "Rent",
                                     free: "Free",
-                                  }[source.type] || source.type}
+                                  }[source.type] || source.type} {
+                                    source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""
+                                  }
                                 </span>
                                 {isFavourite && (
                                   <span className="fav-heart">
