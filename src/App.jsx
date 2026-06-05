@@ -50,6 +50,7 @@ function App() {
 
       if (json.title_results && json.title_results.length > 0) {
         setResults(json.title_results);
+        console.log("results", json.title_results);
       } else {
         setError("No movies found matching that title.");
       }
@@ -129,35 +130,34 @@ function App() {
       </div>
 
       {/* SEARCH INTERFACE */}
-      <div className="card" id="search_bar">
-        <form onSubmit={handleSearch} className="search-form">
-          <input id="search_box" type="text" placeholder="Have you heard of..?" value={movieName} onChange={(e) => setMovieName(e.target.value)} />
-          <button type="submit" id="search_button">
-            Search
-          </button>
-        </form>
-        {loading && <p>Connecting to Watchmode API...</p>}
-        {error && <p className="error-text">{error}</p>}
+      <div id="track_movie_container">
+        <div id="search_bar">
+          <form onSubmit={handleSearch} className="search-form">
+            <input id="search_box" type="text" placeholder="Have you heard of..?" value={movieName} onChange={(e) => setMovieName(e.target.value)} />
+            <button type="submit" id="search_button">
+              Search
+            </button>
+          </form>
+          {loading && <p>Connecting to Watchmode API...</p>}
+          {error && <p className="error-text">{error}</p>}
 
-        {results.length > 0 && (
-          <div className="list search-results">
-            {results.map((movie) => (
-              <div className="search_result" key={movie.id}>
-                <span>
-                  <strong>{movie.name}</strong> ({movie.year})
-                </span>
-                <button id="track_button" onClick={() => trackMovie(movie)} className="btn-track">
-                  Track
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          {results.length > 0 && (
+            <div className="list search-results">
+              {results.map((movie) => (
+                <div className="search_result" key={movie.id}>
+                  <span>
+                    <strong>{movie.name}</strong> ({movie.year})
+                  </span>
+                  <button id="track_button" onClick={() => trackMovie(movie)} className="btn-track">
+                    Track
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* PERSISTENT WATCHLIST */}
-      <div className="card">
-        <div id="watchlist_bar">
+        <div id="filter_bar">
           <div className="toggle-container">
             <label className="switch">
               <input type="checkbox" checked={includeRentals} onChange={(e) => setRentalFlag(e.target.checked)} />
@@ -171,62 +171,65 @@ function App() {
             </button>
           )}
         </div>
+      </div>
 
+      {/* PERSISTENT WATCHLIST */}
+      <div id="movie_list_container">
         {watchlist.length === 0 ? (
           <p className="placeholder-text">Not tracking any movies yet. Search and track one above!</p>
         ) : (
           <div className="list">
-            {watchlist.map((movie) => {
-              const movieSources = watchlistAvailability[movie.id];
-              return (
-                <div key={movie.id} className="watchlist-item-wrapper">
-                  <div className="movie_title">
-                    <div>
-                      <strong>{movie.name}</strong> <small>({movie.year})</small>
+            {console.log("watchlist", watchlist)}
+            {watchlist
+              .sort((a, b) => a - b)
+              .map((movie) => {
+                const movieSources = watchlistAvailability[movie.id];
+                return (
+                  <div key={movie.id} className="watchlist-item-wrapper">
+                    <div className="movie_title">
+                      <div>
+                        <strong>{movie.name}</strong> <small>({movie.year})</small>
+                      </div>
+                      <button onClick={() => untrackMovie(movie.id)} className="btn-delete">
+                        <i className="bi bi-trash"></i>
+                      </button>
                     </div>
-                    <button onClick={() => untrackMovie(movie.id)} className="btn-delete">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
 
-                  {/* INLINE STREAMING STATUS RESULTS FOR THIS SPECIFIC MOVIE */}
-                  {movieSources && (
-                    <div className="inline-availability" style={{ marginTop: "2px" }}>
-                      {movieSources.length === 0 ? (
-                        <p className="alert-box negative" style={{ fontSize: "10px", padding: "2px" }}>
-                          Not currently streaming in the UK.
-                        </p>
-                      ) : (
-                        <div className="services-grid">
-                          {movieSources.map((source, index) => {
-                            const isFavourite = favourites.some((fav) => source.name.toLowerCase().includes(fav.toLowerCase()));
-                            return (
-                              <div key={index} className={`service-pill ${isFavourite ? "favourite-highlight" : "standard-pill"}`}>
-                                <span className="platform-name">{source.name}</span>
-                                <span className="badge-type">
-                                  {{
-                                    sub: "Subscription",
-                                    rent: "Rent",
-                                    free: "Free",
-                                  }[source.type] || source.type} {
-                                    source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""
-                                  }
-                                </span>
-                                {isFavourite && (
-                                  <span className="fav-heart">
-                                    <i class="bi bi-heart-fill"></i>
+                    {/* INLINE STREAMING STATUS RESULTS FOR THIS SPECIFIC MOVIE */}
+                    {movieSources && (
+                      <div className="inline-availability">
+                        {movieSources.length === 0 ? (
+                          <p className="alert-box negative">Not currently showing in the UK.</p>
+                        ) : (
+                          <div className="services-grid">
+                            {movieSources.map((source, index) => {
+                              const isFavourite = favourites.some((fav) => source.name.toLowerCase().includes(fav.toLowerCase()));
+                              return (
+                                <div key={index} className={`service-pill ${isFavourite ? "favourite-highlight" : "standard-pill"}`}>
+                                  <span className="platform-name">{source.name}</span>
+                                  <span className="badge-type">
+                                    {{
+                                      sub: "Subscription",
+                                      rent: "Rent",
+                                      free: "Free",
+                                    }[source.type] || source.type}{" "}
+                                    {source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""}
                                   </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                                  {isFavourite && (
+                                    <span className="fav-heart">
+                                      <i className="bi bi-heart-fill"></i>
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>

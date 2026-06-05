@@ -98,6 +98,15 @@ input:checked + .slider:before {
 
 /* ////////////// SEARCH BAR ////////////// */
 
+#track_movie_container {
+    position: sticky;
+    top: 10px;
+    background: white;
+}
+
+#movie_list_container {
+}
+
 #search_bar {
     margin: 0 0 10px 0;
     font-family: "poppins";
@@ -133,7 +142,7 @@ input:checked + .slider:before {
     font-family: "poppins";
 }
 
-#watchlist_bar {
+#filter_bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -167,6 +176,15 @@ input:checked + .slider:before {
     border-bottom: 1px solid whitesmoke;
     margin: 0px 10px 0px 10px;
     padding: 5px 0 2px 0;
+}
+
+.inline-availability {
+    margin-top: 2px;
+}
+
+.alert-box {
+    font-size: 10px;
+    padding: 2px;
 }
 
 .movie_title {
