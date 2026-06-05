@@ -1,3 +1,5 @@
+/* ////////////// CONTROL BAR ////////////// */
+
 #control_bar {
     display: flex;
     justify-items: center;
@@ -20,13 +22,89 @@
     font-size: 40px;
 }
 
+/* ////////////// RENTAL TOGGLE ////////////// */
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: "poppins";
+    margin: 0 0 5px 10px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+}
+
+/* hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* the slider track */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+}
+
+/* the sliding knob */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+}
+
+/* background color when toggled ON */
+input:checked + .slider {
+    background-color: #428BCA; 
+}
+
+/* knob movement when toggled ON */
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+/* rounded sliders */
+.slider.round {
+    border-radius: 18px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* label text size */
+.toggle-label {
+    font-size: 13px;
+    color: #333;
+}
+
+/* ////////////// SEARCH BAR ////////////// */
+
 #search_bar {
     margin: 0 0 10px 0;
     font-family: "poppins";
 }
 
 #search_box {
-    font-size: 20px;
+    font-size: 16px;
     padding: 2px 5px;
     border-width: 1px;
     border-radius: 5px 0 0 5px;
@@ -34,7 +112,7 @@
 }
 
 #search_button {
-    font-size: 20px;
+    font-size: 16px;
     padding: 2px 5px;
     border-width: 1px;
     border-radius: 0 5px 5px 0;
@@ -44,10 +122,10 @@
 }
 
 #check_movies_button {
-    font-size: 20px;
+    font-size: 18px;
     padding: 2px 5px;
     border-width: 1px;
-    border-radius: 5px;
+    border-radius: 10px;
     background-color: #428BCA;
     color: white;
     margin: 0 10px 5px 0;
@@ -63,13 +141,26 @@
     padding-bottom: 2px;
 }
 
+/* ////////////// SEARCH RESULTS ////////////// */
+
+.search-results {
+    margin: 10px 0 0 0;
+}
+
+.search_result {
+    margin: 5px 0 0 0;
+}
+
 #track_button {
     padding: 2px 5px;
     border-width: 1px;
-    border-radius: 0 5px 5px 0;
+    border-radius: 5px;
     background-color: rgb(106, 106, 106);
     color: white;
+    margin: 0 0 0 5px;
 }
+
+/* ////////////// MOVIE LIST ////////////// */
 
 .watchlist-item-wrapper {
     display: block;
@@ -97,12 +188,17 @@
 }
 
 .btn-delete {
-    font-size: 20px;
+    font-size: 18px;
     padding: 4px 10px 3px 10px;
     border-color: whitesmoke;
-    background: crimson;
+    background: red;
     color: white;
     border-width: 1px;
     border-radius: 5px;
     margin: 0 5px 0 0;
+}
+
+.bi-heart-fill {
+    margin: 0 0 0 5px;
+    color: crimson;
 }

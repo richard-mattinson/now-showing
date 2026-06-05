@@ -7,6 +7,7 @@ function App() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [includeRentals, setRentalFlag] = useState(false)
 
   // load watchlist from local storage on startup
   const [watchlist, setWatchlist] = useState(() => {
@@ -20,7 +21,7 @@ function App() {
   const [batchLoading, setBatchLoading] = useState(false);
 
   // your UK favourite platforms list
-  const [favourites] = useState(["Netflix", "Amazon Prime", "Disney+", "BBC iPlayer", "Now TV", "Apple TV"]);
+  const [favourites] = useState(["Mubi"]);
 
   const apiKey = import.meta.env.VITE_WATCHMODE_API_KEY;
 
@@ -99,7 +100,12 @@ function App() {
         console.log("source data", sourcesData);
         
         // filter to free and subscription films available on streaming
-        const ukStreaming = sourcesData.filter((source) => (source.type === "sub" || source.type === "free") && (source.region === "UK" || source.region === "GB"));
+        const ukStreaming = sourcesData.filter((source) => {
+          const isValidType = source.type === "sub" || source.type === "free" || (includeRentals && source.type === "rent");
+          const isValidRegion = source.region === "UK" || source.region === "GB";
+
+          return isValidType && isValidRegion;
+        });
 
         // save the results map indexed by this specific movie ID
         newAvailabilityResults[movieId] = ukStreaming;
@@ -134,25 +140,31 @@ function App() {
         {error && <p className="error-text">{error}</p>}
 
         {results.length > 0 && (
-          <ul className="list search-results">
+          <div className="list search-results">
             {results.map((movie) => (
-              <li key={movie.id}>
+              <div className="search_result" key={movie.id}>
                 <span>
                   <strong>{movie.name}</strong> ({movie.year})
                 </span>
                 <button id="track_button" onClick={() => trackMovie(movie)} className="btn-track">
                   Track
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
 
       {/* PERSISTENT WATCHLIST */}
       <div className="card">
         <div id="watchlist_bar">
-          <h3>Watchlist</h3>
+          <div className="toggle-container">
+            <label className="switch">
+              <input type="checkbox" checked={includeRentals} onChange={(e) => setRentalFlag(e.target.checked)} />
+              <span className="slider round"></span>
+            </label>
+            <span className="toggle-label">Include Rentals</span>
+          </div>
           {watchlist.length > 0 && (
             <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
               {batchLoading ? "Scanning All..." : "Check Availability"}
@@ -191,8 +203,18 @@ function App() {
                             return (
                               <div key={index} className={`service-pill ${isFavourite ? "favourite-highlight" : "standard-pill"}`}>
                                 <span className="platform-name">{source.name}</span>
-                                <span className="badge-type">{source.type === "sub" ? "Subscription" : "Free"}</span>
-                                {isFavourite && <span className="fav-star">⭐️ Favourite</span>}
+                                <span className="badge-type">
+                                  {{
+                                    sub: "Subscription",
+                                    rent: "Rent",
+                                    free: "Free",
+                                  }[source.type] || source.type}
+                                </span>
+                                {isFavourite && (
+                                  <span className="fav-heart">
+                                    <i class="bi bi-heart-fill"></i>
+                                  </span>
+                                )}
                               </div>
                             );
                           })}
