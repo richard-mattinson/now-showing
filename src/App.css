@@ -1,25 +1,125 @@
 /* ////////////// CONTROL BAR ////////////// */
 
 #control_bar {
+    position: relative;          /* Creates the boundary box and anchor for the dropdown */
     display: flex;
-    justify-items: center;
     align-items: center;
-    background: grey;
-    height: 60px;
-    margin: 0 0 20px 0;
-    justify-content: center;
-    align-content: center;
-    padding: 5px;
+    justify-content: center;     /* centres "NOW SHOWING" text */
+    padding: 12px 20px;
+    background-color: rgb(106, 106, 106);
     color: white;
+    z-index: 100;                /* forces header elements above standard text layer */
 }
 
 .app_title {
-    font-size: 40px;
-    margin: 0 10px 0 10px;
+    font-size: 1.4rem;
+    margin: 0 3px 0 3px;
 }
 
 #app_icon {
-    font-size: 40px;
+    font-size: 1.3rem;
+}
+
+.control-gear-btn {
+    position: absolute;
+    right: 20px;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* position the pop out menu */
+.global-sources-menu {
+    position: absolute;
+    top: 100%;                   /* snaps the top edge exactly to the bottom of the header */
+    right: 20px;
+    width: 320px;
+    max-height: 380px;           /* prevents panel from covering the whole screen layout */
+    overflow-y: auto;            /* adds a scrollbar if list exceeded screen height */
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    color: #1a202c;
+}
+
+/* ////////////// POP OUT MENU ////////////// */
+.global-sources-menu h4 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2d3748;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 6px;
+}
+
+.menu-sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.menu-source-item {
+    display: flex;
+    justify-content: space-between; /* pushes text to left and radios to right */
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f7fafc;
+}
+
+.menu-source-name {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* container block handling alignment */
+.radio-group {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+/* base style for icon labels acting as click fields */
+.icon-radio-label {
+    cursor: pointer;
+    font-size: 1.2rem; /* scales the icon size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, transform 0.1s ease;
+}
+
+/* hover effect on inactive items to signal interactivity */
+.icon-radio-label:hover {
+    transform: scale(1.15);
+}
+
+/* Black state configuration when options are idle */
+.icon-radio-label.unselected {
+    color: black;
+    opacity: 0.6;
+}
+
+/* highlight active radio options */
+.icon-radio-label.selected {
+    color: #0056b3;
+    opacity: 1;
+}
+
+/* completely clip out default radio circles safely without breaking accessibility */
+.hidden-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
 }
 
 /* ////////////// RENTAL TOGGLE ////////////// */
@@ -100,11 +200,9 @@ input:checked + .slider:before {
 
 #track_movie_container {
     position: sticky;
-    top: 10px;
+    top: 0px;
+    padding: 10px 0 0 0;
     background: white;
-}
-
-#movie_list_container {
 }
 
 #search_bar {

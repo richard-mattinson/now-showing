@@ -7,7 +7,31 @@ function App() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [includeRentals, setRentalFlag] = useState(false)
+  const [includeRentals, setRentalFlag] = useState(false);
+
+  const sourcesList = ["Amazon", "Apple TV", "BBC iPlayer", "BFI Player", "Curzon Home Cinema", "Disney+", "Mubi", "Netflix", "Shudder", "Sky Store"];
+
+  // tracks saved liked/loved/disliked settings
+  const [sourcePreferences, setSourcePreferences] = useState(() => {
+    const saved = localStorage.getItem("uk_source_preferences");
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // controls whether the gear menu dropdown is open or closed
+  const [showSettings, setShowSettings] = useState(false);
+
+  // save settings to the browser memory whenever a radio button changes
+  useEffect(() => {
+    localStorage.setItem("uk_source_preferences", JSON.stringify(sourcePreferences));
+  }, [sourcePreferences]);
+
+  // update a single platform's preference without affecting the others
+  const handlePreferenceChange = (sourceName, status) => {
+    setSourcePreferences((prev) => ({
+      ...prev,
+      [sourceName.toLowerCase()]: status,
+    }));
+  };
 
   // load watchlist from local storage on startup
   const [watchlist, setWatchlist] = useState(() => {
@@ -20,10 +44,17 @@ function App() {
   const [watchlistAvailability, setWatchlistAvailability] = useState({});
   const [batchLoading, setBatchLoading] = useState(false);
 
-  // your UK favourite platforms list
-  const [favourites] = useState(["Mubi"]);
-
   const apiKey = import.meta.env.VITE_WATCHMODE_API_KEY;
+
+  const getSources = async () => {
+    const urlSources = `https://api.watchmode.com/v1/sources/?apiKey=${apiKey}&regions=UK,GB`;
+
+    const response = await fetch(urlSources);
+    const jsonSources = await response.json();
+    console.log("sources", jsonSources);
+  };
+
+  getSources();
 
   // sync watchlist data array to local storage
   useEffect(() => {
@@ -99,7 +130,7 @@ function App() {
         if (!response.ok) throw new Error(`Status: ${response.status}`);
         const sourcesData = await response.json();
         console.log("source data", sourcesData);
-        
+
         // filter to free and subscription films available on streaming
         const ukStreaming = sourcesData.filter((source) => {
           const isValidType = source.type === "sub" || source.type === "free" || (includeRentals && source.type === "rent");
@@ -121,19 +152,87 @@ function App() {
     setBatchLoading(false);
   };
 
+  // close pop up menu if user clicks outside menu while it's open
+  useEffect(() => {
+    const closeMenu = (e) => {
+      // if the click came from the gear button or inside the menu, do nothing
+      if (e.target.closest(".control-gear-btn") || e.target.closest(".global-sources-menu")) {
+        return;
+      }
+      // otherwise, close the menu
+      setShowSettings(false);
+    };
+
+    if (showSettings) {
+      window.addEventListener("click", closeMenu);
+    }
+
+    return () => window.removeEventListener("click", closeMenu);
+  }, [showSettings]);
+
   return (
     <div className="container">
       <div id="control_bar">
-        <div className="app_title">Now</div>
-        <i className="bi bi-camera-reels" id="app_icon"></i>
-        <div className="app_title">Showing</div>
+        <div className="app_title">NOW SH</div>
+        <i className="bi bi-tv" id="app_icon"></i>
+        <div className="app_title">WING</div>
+
+        {/* gear icon button toggles the settings panel */}
+        <button className="control-gear-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Toggle Source Settings">
+          <i className="bi bi-gear-fill"></i>
+        </button>
+
+        {/* pop-out menu for UK services from sourcesList */}
+        {showSettings && (
+          <div className="global-sources-menu">
+            <h4>Preferred Services</h4>
+            <div className="menu-sources-list">
+              {sourcesList.map((sourceName) => {
+                const sourceKey = sourceName.toLowerCase();
+                const currentPref = sourcePreferences[sourceKey] || "liked";
+
+                return (
+                  <div key={sourceName} className="menu-source-item">
+                    <span className="menu-source-name">{sourceName}</span>
+                    <div className="radio-group">
+                      {[
+                        { value: "liked", icon: "bi-hand-thumbs-up" },
+                        { value: "disliked", icon: "bi-hand-thumbs-down" },
+                        { value: "loved", icon: "bi-heart" },
+                      ].map((option) => {
+                        const isSelected = currentPref === option.value;
+
+                        // use the filled heart icon specifically if loved and active
+                        let iconClass = option.value === "loved" && isSelected ? "bi-heart-fill" : option.icon;
+                        
+                        return (
+                          <label key={option.value} className={`icon-radio-label ${isSelected ? "selected" : "unselected"}`} title={option.value.charAt(0).toUpperCase() + option.value.slice(1)}>
+                            <input
+                              type="radio"
+                              name={`pref-${sourceKey}`}
+                              value={option.value}
+                              checked={isSelected}
+                              onChange={() => handlePreferenceChange(sourceName, option.value)}
+                              className="hidden-radio"
+                            />
+                            <i className={`bi ${iconClass}`}></i>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* SEARCH INTERFACE */}
       <div id="track_movie_container">
         <div id="search_bar">
           <form onSubmit={handleSearch} className="search-form">
-            <input id="search_box" type="text" placeholder="Have you heard of..?" value={movieName} onChange={(e) => setMovieName(e.target.value)} />
+            <input id="search_box" type="text" placeholder="Have you heard of..." value={movieName} onChange={(e) => setMovieName(e.target.value)} />
             <button type="submit" id="search_button">
               Search
             </button>
@@ -195,34 +294,42 @@ function App() {
                       </button>
                     </div>
 
-                    {/* INLINE STREAMING STATUS RESULTS FOR THIS SPECIFIC MOVIE */}
+                    {/* STREAMING STATUS RESULTS FOR EACH MOVIE */}
                     {movieSources && (
                       <div className="inline-availability">
-                        {movieSources.length === 0 ? (
+                        {/* filter out elements inline that have been configured as 'disliked' e.g., Amazon obvs */}
+                        {movieSources.filter((s) => sourcePreferences[s.name.toLowerCase()] !== "disliked").length === 0 ? (
                           <p className="alert-box negative">Not currently showing in the UK.</p>
                         ) : (
                           <div className="services-grid">
-                            {movieSources.map((source, index) => {
-                              const isFavourite = favourites.some((fav) => source.name.toLowerCase().includes(fav.toLowerCase()));
-                              return (
-                                <div key={index} className={`service-pill ${isFavourite ? "favourite-highlight" : "standard-pill"}`}>
-                                  <span className="platform-name">{source.name}</span>
-                                  <span className="badge-type">
-                                    {{
-                                      sub: "Subscription",
-                                      rent: "Rent",
-                                      free: "Free",
-                                    }[source.type] || source.type}{" "}
-                                    {source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""}
-                                  </span>
-                                  {isFavourite && (
-                                    <span className="fav-heart">
-                                      <i className="bi bi-heart-fill"></i>
+                            {movieSources
+                              .filter((source) => sourcePreferences[source.name.toLowerCase()] !== "disliked")
+                              .map((source, index) => {
+                                const sourceKey = source.name.toLowerCase();
+                                const isLoved = sourcePreferences[sourceKey] === "loved";
+
+                                return (
+                                  <div key={index} className={`service-pill ${isLoved ? "favourite-highlight" : "standard-pill"}`}>
+                                    <span className="platform-name">{source.name}</span>
+
+                                    <span className="badge-type">
+                                      {{
+                                        sub: "Subscription",
+                                        rent: "Rent",
+                                        free: "Free",
+                                      }[source.type] || source.type}{" "}
+                                      {source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""}
                                     </span>
-                                  )}
-                                </div>
-                              );
-                            })}
+
+                                    {/* display heart exclusively if status is explicitly set to 'loved' */}
+                                    {isLoved && (
+                                      <span className="fav-heart">
+                                        <i className="bi bi-heart-fill"></i>
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
                           </div>
                         )}
                       </div>
