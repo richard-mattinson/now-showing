@@ -31,6 +31,8 @@
     padding: 4px;
 }
 
+/* ////////////// POP OUT MENU ////////////// */
+
 /* position the pop out menu */
 .global-sources-menu {
     position: absolute;
@@ -48,7 +50,6 @@
     color: #1a202c;
 }
 
-/* ////////////// POP OUT MENU ////////////// */
 .global-sources-menu h4 {
     margin: 0 0 12px 0;
     font-size: 15px;
@@ -201,8 +202,9 @@ input:checked + .slider:before {
 #track_movie_container {
     position: sticky;
     top: 0px;
-    padding: 10px 0 0 0;
+    padding: 10px 0 0 10px;
     background: white;
+    border-bottom: 1px solid whitesmoke;
 }
 
 #search_bar {
@@ -244,6 +246,8 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px 0 0px 0;
+    background: #f8f9fa;
 }
 
 /* ////////////// SEARCH RESULTS ////////////// */
@@ -270,7 +274,7 @@ input:checked + .slider:before {
 #sort-buttons-container {
     display: flex;
     gap: 10px;
-    margin: 5px 0 5px 0;
+    margin: 0 0 5px 0;
     background-color: #f8f9fa;
     padding: 8px;
 }

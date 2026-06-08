@@ -304,21 +304,21 @@ function App() {
             </div>
           )}
         </div>
+      </div>
 
-        <div id="filter_bar">
-          <div className="toggle-container">
-            <label className="switch">
-              <input type="checkbox" checked={includeRentals} onChange={(e) => setRentalFlag(e.target.checked)} />
-              <span className="slider round"></span>
-            </label>
-            <span className="toggle-label">Include Rentals</span>
-          </div>
-          {watchlist.length > 0 && (
-            <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
-              {batchLoading ? "One moment..." : "Check Availability"}
-            </button>
-          )}
+      <div id="filter_bar">
+        <div className="toggle-container">
+          <label className="switch">
+            <input type="checkbox" checked={includeRentals} onChange={(e) => setRentalFlag(e.target.checked)} />
+            <span className="slider round"></span>
+          </label>
+          <span className="toggle-label">Include Rentals</span>
         </div>
+        {watchlist.length > 0 && (
+          <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
+            {batchLoading ? "One moment..." : "Check Availability"}
+          </button>
+        )}
       </div>
 
       {/* /////////////////////// SORT WATCHLIST BUTTONS /////////////////////// */}
