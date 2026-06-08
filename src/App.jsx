@@ -3,13 +3,37 @@ import "./App.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 function App() {
-  const [movieName, setMovieName] = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [includeRentals, setRentalFlag] = useState(false);
+  const [movieName, setMovieName] = useState(""); // for storing the search bar movie title
+  const [results, setResults] = useState([]); // for storing the results of a movie search
+  const [loading, setLoading] = useState(false); // for setting loading animations
+  const [error, setError] = useState(""); // for setting api errors
+  const [includeRentals, setRentalFlag] = useState(false); // for setting the include rentals flag
+  const [sortBy, setSortBy] = useState("dateAdded"); // for sorting the watchlist sort order
 
-  const sourcesList = ["Amazon", "Apple TV", "BBC iPlayer", "BFI Player", "Curzon Home Cinema", "Disney+", "Mubi", "Netflix", "Shudder", "Sky Store"];
+  const sourcesList = [
+    "All 4",
+    "Amazon",
+    "AppleTV+",
+    "BBC iPlayer",
+    "BFI Player",
+    "Crunchyroll",
+    "Curzon Home Cinema",
+    "Disney+",
+    "ITVX",
+    "Kanopy",
+    "Mubi",
+    "My5",
+    "Netflix",
+    "Paramount+",
+    "Prime Video",
+    "Rakuten TV",
+    "Shudder",
+    "Sky Go",
+    "Sky Store",
+    "Tubi TV",
+  ];
+
+  /////////////////////// SERVICES PREFERENCES MENU ///////////////////////
 
   // tracks saved liked/loved/disliked settings
   const [sourcePreferences, setSourcePreferences] = useState(() => {
@@ -33,6 +57,8 @@ function App() {
     }));
   };
 
+  /////////////////////// LOAD WATCH LIST ///////////////////////
+
   // load watchlist from local storage on startup
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem("now-showing-watchlist");
@@ -46,6 +72,10 @@ function App() {
 
   const apiKey = import.meta.env.VITE_WATCHMODE_API_KEY;
 
+  /////////////////////// GET SOURCES ///////////////////////
+
+  const shallIGetSources = false; // set as true to check source list
+
   const getSources = async () => {
     const urlSources = `https://api.watchmode.com/v1/sources/?apiKey=${apiKey}&regions=UK,GB`;
 
@@ -54,12 +84,16 @@ function App() {
     console.log("sources", jsonSources);
   };
 
-  getSources();
+  if (shallIGetSources) {
+    getSources();
+  }
 
   // sync watchlist data array to local storage
   useEffect(() => {
     localStorage.setItem("now-showing-watchlist", JSON.stringify(watchlist));
   }, [watchlist]);
+
+  /////////////////////// SEARCH AND TRACK MOVIES ///////////////////////
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -97,6 +131,11 @@ function App() {
       alert(`"${movie.name}" is already on your watchlist!`);
       return;
     }
+
+    const dateNow = new Date();
+    movie.dateAdded = `${dateNow}`;
+    console.log("datenow", movie);
+
     setWatchlist([...watchlist, movie]);
     setResults([]);
     setMovieName("");
@@ -110,6 +149,8 @@ function App() {
     setWatchlistAvailability(updatedAvailability);
   };
 
+  /////////////////////// CHECK WATCH LIST ///////////////////////
+
   const checkAllUKAvailability = async () => {
     if (watchlist.length === 0) {
       alert("Your watchlist is empty! Add movies first.");
@@ -119,7 +160,7 @@ function App() {
     setBatchLoading(true);
     const newAvailabilityResults = {};
 
-    // loop through each movie in your tracking array
+    // loop through each movie in the tracking array
     for (const movie of watchlist) {
       const movieId = movie.id;
 
@@ -152,6 +193,8 @@ function App() {
     setBatchLoading(false);
   };
 
+  /////////////////////// CLOSE POP UP MENU ///////////////////////
+
   // close pop up menu if user clicks outside menu while it's open
   useEffect(() => {
     const closeMenu = (e) => {
@@ -170,6 +213,8 @@ function App() {
     return () => window.removeEventListener("click", closeMenu);
   }, [showSettings]);
 
+  /////////////////////// RENDER FRONT END ///////////////////////
+
   return (
     <div className="container">
       <div id="control_bar">
@@ -177,12 +222,12 @@ function App() {
         <i className="bi bi-tv" id="app_icon"></i>
         <div className="app_title">WING</div>
 
-        {/* gear icon button toggles the settings panel */}
+        {/* /////////////////////// GEAR ICON /////////////////////// */}
         <button className="control-gear-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Toggle Source Settings">
           <i className="bi bi-gear-fill"></i>
         </button>
 
-        {/* pop-out menu for UK services from sourcesList */}
+        {/* /////////////////////// SERVICE PREFERENCES MENU /////////////////////// */}
         {showSettings && (
           <div className="global-sources-menu">
             <h4>Preferred Services</h4>
@@ -201,10 +246,14 @@ function App() {
                         { value: "loved", icon: "bi-heart" },
                       ].map((option) => {
                         const isSelected = currentPref === option.value;
-
-                        // use the filled heart icon specifically if loved and active
-                        let iconClass = option.value === "loved" && isSelected ? "bi-heart-fill" : option.icon;
-                        
+                        // uses filled versions of each icon when selected.
+                        let iconClass = isSelected
+                          ? {
+                              liked: "bi-hand-thumbs-up-fill",
+                              disliked: "bi-hand-thumbs-down-fill",
+                              loved: "bi-heart-fill",
+                            }[option.value] || option.icon
+                          : option.icon;
                         return (
                           <label key={option.value} className={`icon-radio-label ${isSelected ? "selected" : "unselected"}`} title={option.value.charAt(0).toUpperCase() + option.value.slice(1)}>
                             <input
@@ -228,7 +277,7 @@ function App() {
         )}
       </div>
 
-      {/* SEARCH INTERFACE */}
+      {/* /////////////////////// SEARCH BAR /////////////////////// */}
       <div id="track_movie_container">
         <div id="search_bar">
           <form onSubmit={handleSearch} className="search-form">
@@ -237,7 +286,7 @@ function App() {
               Search
             </button>
           </form>
-          {loading && <p>Connecting to Watchmode API...</p>}
+          {loading && <p>Checking the stockroom...</p>}
           {error && <p className="error-text">{error}</p>}
 
           {results.length > 0 && (
@@ -266,21 +315,47 @@ function App() {
           </div>
           {watchlist.length > 0 && (
             <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
-              {batchLoading ? "Scanning All..." : "Check Availability"}
+              {batchLoading ? "One moment..." : "Check Availability"}
             </button>
           )}
         </div>
       </div>
 
-      {/* PERSISTENT WATCHLIST */}
+      {/* /////////////////////// SORT WATCHLIST BUTTONS /////////////////////// */}
+      <div id="sort-buttons-container">
+        <div id="sort-buttons-label">Sort by</div>
+        <button className={`btn-sort ${sortBy === "dateAdded" ? "selected" : ""}`} onClick={() => setSortBy("dateAdded")}>
+          <i className="bi bi-clock-history"></i> Added
+        </button>
+        <button className={`btn-sort ${sortBy === "name" ? "selected" : ""}`} onClick={() => setSortBy("name")}>
+          <i className="bi bi-sort-alpha-down"></i> Name
+        </button>
+        <button className={`btn-sort ${sortBy === "year" ? "selected" : ""}`} onClick={() => setSortBy("year")}>
+          <i className="bi bi-calendar3"></i> Year
+        </button>
+      </div>
+
+      {/* /////////////////////// WATCHLIST /////////////////////// */}
       <div id="movie_list_container">
         {watchlist.length === 0 ? (
           <p className="placeholder-text">Not tracking any movies yet. Search and track one above!</p>
         ) : (
           <div className="list">
             {console.log("watchlist", watchlist)}
+            {/* slice creates a shallow copy to prevent direct state mutation during sort */}
             {watchlist
-              .sort((a, b) => a - b)
+              .slice()
+              .sort((a, b) => {
+                if (sortBy === "dateAdded") {
+                  return new Date(b.dateAdded) - new Date(a.dateAdded); // newest added first
+                } else if (sortBy === "name") {
+                  // a-z
+                  return a.name.localeCompare(b.name);
+                } else if (sortBy === "year") {
+                  return b.year - a.year; // newest year first (change to a.year - b.year for oldest first)
+                }
+                return 0;
+              })
               .map((movie) => {
                 const movieSources = watchlistAvailability[movie.id];
                 return (
@@ -294,10 +369,10 @@ function App() {
                       </button>
                     </div>
 
-                    {/* STREAMING STATUS RESULTS FOR EACH MOVIE */}
+                    {/* /////////////////////// AVAILABILITY FOR EACH MOVIE /////////////////////// */}
                     {movieSources && (
                       <div className="inline-availability">
-                        {/* filter out elements inline that have been configured as 'disliked' e.g., Amazon obvs */}
+                        {/* filter out elements inline that have been set as 'disliked' e.g., Amazon obvs */}
                         {movieSources.filter((s) => sourcePreferences[s.name.toLowerCase()] !== "disliked").length === 0 ? (
                           <p className="alert-box negative">Not currently showing in the UK.</p>
                         ) : (
@@ -321,7 +396,7 @@ function App() {
                                       {source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""}
                                     </span>
 
-                                    {/* display heart exclusively if status is explicitly set to 'loved' */}
+                                    {/* display heart if service is set to 'loved' */}
                                     {isLoved && (
                                       <span className="fav-heart">
                                         <i className="bi bi-heart-fill"></i>

@@ -244,8 +244,6 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid whitesmoke; 
-    padding-bottom: 2px;
 }
 
 /* ////////////// SEARCH RESULTS ////////////// */
@@ -267,7 +265,31 @@ input:checked + .slider:before {
     margin: 0 0 0 5px;
 }
 
-/* ////////////// MOVIE LIST ////////////// */
+/* ////////////// WATCH LIST SORT BUTTONS ////////////// */
+
+#sort-buttons-container {
+    display: flex;
+    gap: 10px;
+    margin: 5px 0 5px 0;
+    background-color: #f8f9fa;
+    padding: 8px;
+}
+
+.btn-sort {
+    background: rgb(106, 106, 106);
+    color: white;
+    border: 1px solid grey;
+    border-radius: 10px;
+    padding: 2px 8px 2px 5px;
+    font-family: "poppins";
+}
+
+#sort-buttons-container > .selected {
+    background: #428BCA ;
+    color: white;
+}
+
+/* ////////////// WATCH LIST ////////////// */
 
 .watchlist-item-wrapper {
     display: block;
