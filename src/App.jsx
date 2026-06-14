@@ -57,13 +57,18 @@ function App() {
     }));
   };
 
-  /////////////////////// LOAD WATCH LIST ///////////////////////
+  /////////////////////// MANAGE WATCH LIST ///////////////////////
 
   // load watchlist from local storage on startup
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem("now-showing-watchlist");
     return saved ? JSON.parse(saved) : [];
   });
+
+  // save watchlist to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("now-showing-watchlist", JSON.stringify(watchlist));
+  }, [watchlist]);
 
   // store the streaming availability results for all checked movies
   // format: { [movieId]: [array of UK sources] }
@@ -134,7 +139,10 @@ function App() {
 
     const dateNow = new Date();
     movie.dateAdded = `${dateNow}`;
-    console.log("datenow", movie);
+
+    // initialise daily check availability properties
+    movie.availabilityCheckedDate = null;
+    movie.cachedAvailability = [];
 
     setWatchlist([...watchlist, movie]);
     setResults([]);
@@ -159,10 +167,19 @@ function App() {
 
     setBatchLoading(true);
     const newAvailabilityResults = {};
+    const updatedWatchlist = [...watchlist];
+    const todayString = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-    // loop through each movie in the tracking array
-    for (const movie of watchlist) {
+    for (let i = 0; i < updatedWatchlist.length; i++) {
+      const movie = updatedWatchlist[i];
       const movieId = movie.id;
+
+      // check if already fetched today
+      if (movie.availabilityCheckedDate === todayString) {
+        console.log(`Using cached data for ${movie.name}`);
+        newAvailabilityResults[movieId] = movie.cachedAvailability || [];
+        continue;
+      }
 
       const url = `https://api.watchmode.com/v1/title/${movieId}/sources/?apiKey=${apiKey}`;
 
@@ -170,25 +187,31 @@ function App() {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Status: ${response.status}`);
         const sourcesData = await response.json();
-        console.log("source data", sourcesData);
 
-        // filter to free and subscription films available on streaming
         const ukStreaming = sourcesData.filter((source) => {
-          const isValidType = source.type === "sub" || source.type === "free" || (includeRentals && source.type === "rent");
+          const isValidType = source.type === "sub" || source.type === "free" || source.type === "rent";
           const isValidRegion = source.region === "UK" || source.region === "GB";
-
           return isValidType && isValidRegion;
         });
 
-        // save the results map indexed by this specific movie ID
+        // update cached data and timestamp for this movie
+        updatedWatchlist[i] = {
+          ...movie,
+          availabilityCheckedDate: todayString,
+          cachedAvailability: ukStreaming,
+        };
+
         newAvailabilityResults[movieId] = ukStreaming;
       } catch (err) {
         console.error(`Could not fetch data for ${movie.name}:`, err.message);
-        newAvailabilityResults[movieId] = []; // fallback to empty on error
+
+        // Keep old cache on failure or set empty
+        newAvailabilityResults[movieId] = movie.cachedAvailability || [];
       }
     }
 
-    // save the global data object map to component state
+    // Update both states to keep them in sync
+    setWatchlist(updatedWatchlist);
     setWatchlistAvailability(newAvailabilityResults);
     setBatchLoading(false);
   };
@@ -358,6 +381,16 @@ function App() {
               })
               .map((movie) => {
                 const movieSources = watchlistAvailability[movie.id];
+
+                // filter sources based on preferences AND includeRentals toggle
+                const visibleSources = movieSources
+                  ? movieSources.filter((source) => {
+                      const isNotDisliked = sourcePreferences[source.name.toLowerCase()] !== "disliked";
+                      const matchesRentalToggle = source.type !== "rent" || includeRentals;
+                      return isNotDisliked && matchesRentalToggle;
+                    })
+                  : [];
+
                 return (
                   <div key={movie.id} className="watchlist-item-wrapper">
                     <div className="movie_title">
@@ -372,39 +405,37 @@ function App() {
                     {/* /////////////////////// AVAILABILITY FOR EACH MOVIE /////////////////////// */}
                     {movieSources && (
                       <div className="inline-availability">
-                        {/* filter out elements inline that have been set as 'disliked' e.g., Amazon obvs */}
-                        {movieSources.filter((s) => sourcePreferences[s.name.toLowerCase()] !== "disliked").length === 0 ? (
+                        {/* check the length of filtered film array */}
+                        {visibleSources.length === 0 ? (
                           <p className="alert-box negative">Not currently showing in the UK.</p>
                         ) : (
                           <div className="services-grid">
-                            {movieSources
-                              .filter((source) => sourcePreferences[source.name.toLowerCase()] !== "disliked")
-                              .map((source, index) => {
-                                const sourceKey = source.name.toLowerCase();
-                                const isLoved = sourcePreferences[sourceKey] === "loved";
+                            {/* map filtered films */}
+                            {visibleSources.map((source, index) => {
+                              const sourceKey = source.name.toLowerCase();
+                              const isLoved = sourcePreferences[sourceKey] === "loved";
 
-                                return (
-                                  <div key={index} className={`service-pill ${isLoved ? "favourite-highlight" : "standard-pill"}`}>
-                                    <span className="platform-name">{source.name}</span>
+                              return (
+                                <div key={index} className={`service-pill ${isLoved ? "favourite-highlight" : "standard-pill"}`}>
+                                  <span className="platform-name">{source.name}</span>
 
-                                    <span className="badge-type">
-                                      {{
-                                        sub: "Subscription",
-                                        rent: "Rent",
-                                        free: "Free",
-                                      }[source.type] || source.type}{" "}
-                                      {source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""}
+                                  <span className="badge-type">
+                                    {{
+                                      sub: "Subscription",
+                                      rent: "Rent",
+                                      free: "Free",
+                                    }[source.type] || source.type}{" "}
+                                    {source.type === "rent" ? `${source.format} £${Number(source.price).toFixed(2)}` : ""}
+                                  </span>
+
+                                  {isLoved && (
+                                    <span className="fav-heart">
+                                      <i className="bi bi-heart-fill"></i>
                                     </span>
-
-                                    {/* display heart if service is set to 'loved' */}
-                                    {isLoved && (
-                                      <span className="fav-heart">
-                                        <i className="bi bi-heart-fill"></i>
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              })}
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
