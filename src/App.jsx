@@ -10,13 +10,19 @@ function App() {
   const [includeRentals, setRentalFlag] = useState(false); // for setting the include rentals flag
   const [sortBy, setSortBy] = useState("dateAdded"); // for sorting the watchlist sort order
 
+  // TODO: always set as FALSE before pushing
+  const shallIGetSources = false; // set as true to check source list
+
+  const apiKey = import.meta.env.VITE_WATCHMODE_API_KEY;
+
   const sourcesList = [
     "All 4",
     "Amazon",
+    "Amazon Freevee",
     "AppleTV+",
     "BBC iPlayer",
     "BFI Player",
-    "Crunchyroll",
+    "Crunchyroll Premium",
     "Curzon Home Cinema",
     "Disney+",
     "ITVX",
@@ -24,6 +30,7 @@ function App() {
     "Mubi",
     "My5",
     "Netflix",
+    "NOW TV",
     "Paramount+",
     "Prime Video",
     "Rakuten TV",
@@ -33,6 +40,15 @@ function App() {
     "Tubi TV",
   ];
 
+  /////////////////////// RELEASE NOTES MENU ///////////////////////
+
+  const upcomingChanges = ["Per film leaving date tracking", "Last updated date in title bar", "Display availability on load (based on last check)"];
+
+  const releaseNotes = ["Added Release Notes", "Added several services to Preferred Sources menu", "Added sorting by Added Date, Year and Title"];
+
+  // controls whether the release notes menu is open or closed
+  const [showReleaseNotes, setShowReleaseNotes] = useState(false);
+
   /////////////////////// SERVICES PREFERENCES MENU ///////////////////////
 
   // tracks saved liked/loved/disliked settings
@@ -41,7 +57,7 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  // controls whether the gear menu dropdown is open or closed
+  // controls whether the gear menu menu is open or closed
   const [showSettings, setShowSettings] = useState(false);
 
   // save settings to the browser memory whenever a radio button changes
@@ -75,11 +91,12 @@ function App() {
   const [watchlistAvailability, setWatchlistAvailability] = useState({});
   const [batchLoading, setBatchLoading] = useState(false);
 
-  const apiKey = import.meta.env.VITE_WATCHMODE_API_KEY;
+  // sync watchlist data array to local storage
+  useEffect(() => {
+    localStorage.setItem("now-showing-watchlist", JSON.stringify(watchlist));
+  }, [watchlist]);
 
   /////////////////////// GET SOURCES ///////////////////////
-
-  const shallIGetSources = false; // set as true to check source list
 
   const getSources = async () => {
     const urlSources = `https://api.watchmode.com/v1/sources/?apiKey=${apiKey}&regions=UK,GB`;
@@ -92,11 +109,6 @@ function App() {
   if (shallIGetSources) {
     getSources();
   }
-
-  // sync watchlist data array to local storage
-  useEffect(() => {
-    localStorage.setItem("now-showing-watchlist", JSON.stringify(watchlist));
-  }, [watchlist]);
 
   /////////////////////// SEARCH AND TRACK MOVIES ///////////////////////
 
@@ -205,7 +217,7 @@ function App() {
       } catch (err) {
         console.error(`Could not fetch data for ${movie.name}:`, err.message);
 
-        // Keep old cache on failure or set empty
+        // keep old cache on failure or set empty
         newAvailabilityResults[movieId] = movie.cachedAvailability || [];
       }
     }
@@ -241,14 +253,43 @@ function App() {
   return (
     <div className="container">
       <div id="control_bar">
+        {/* /////////////////////// RELEASE NOTES ICON /////////////////////// */}
+        <button className="control-info-btn" onClick={() => setShowReleaseNotes(!showReleaseNotes)} aria-label="Toggle Release Notes">
+          <i className="bi bi-info-circle"></i>
+        </button>
+
+        {/* /////////////////////// APP TITLE /////////////////////// */}
         <div className="app_title">NOW SH</div>
         <i className="bi bi-tv" id="app_icon"></i>
         <div className="app_title">WING</div>
 
-        {/* /////////////////////// GEAR ICON /////////////////////// */}
+        {/* /////////////////////// PREFERRED SERVICES ICON /////////////////////// */}
         <button className="control-gear-btn" onClick={() => setShowSettings(!showSettings)} aria-label="Toggle Source Settings">
           <i className="bi bi-gear-fill"></i>
         </button>
+
+        {/* /////////////////////// RELEASE NOTES MENU /////////////////////// */}
+        {showReleaseNotes && (
+          <div className="global-release-notes-menu">
+            <h5>Version 0.6 - 2026.06.16</h5>
+            <h4>Next Update</h4>
+            <div className="menu-release-notes-list">
+              <ul>
+                {upcomingChanges.map((change) => {
+                  return <li className="menu-release-notes-item">{change}</li>;
+                })}
+              </ul>
+            </div>
+            <h4>Current Update</h4>
+            <div className="menu-release-notes-list">
+              <ul>
+                {releaseNotes.map((change) => {
+                  return <li className="menu-release-notes-item">{change}</li>;
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* /////////////////////// SERVICE PREFERENCES MENU /////////////////////// */}
         {showSettings && (

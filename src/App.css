@@ -20,6 +20,17 @@
     font-size: 1.3rem;
 }
 
+.control-info-btn {
+    position: absolute;
+    left: 20px;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
 .control-gear-btn {
     position: absolute;
     right: 20px;
@@ -31,7 +42,24 @@
     padding: 4px;
 }
 
-/* ////////////// POP OUT MENU ////////////// */
+/* ////////////// POP OUT MENUS ////////////// */
+
+/* position the pop out menu */
+.global-release-notes-menu {
+    position: absolute;
+    top: 100%;                   /* snaps the top edge exactly to the bottom of the header */
+    left: 20px;
+    width: 320px;
+    max-height: 380px;           /* prevents panel from covering the whole screen layout */
+    overflow-y: auto;            /* adds a scrollbar if list exceeded screen height */
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    color: #1a202c;
+}
 
 /* position the pop out menu */
 .global-sources-menu {
@@ -50,13 +78,33 @@
     color: #1a202c;
 }
 
-.global-sources-menu h4 {
+.global-release-notes-menu h5 {
+    margin: 0 0 12px 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: #2d3748;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 2px;
+}
+
+.global-sources-menu h4,
+.global-release-notes-menu h4 {
     margin: 0 0 12px 0;
     font-size: 15px;
     font-weight: 600;
     color: #2d3748;
     border-bottom: 2px solid #edf2f7;
     padding-bottom: 6px;
+}
+
+ul, li {
+    padding: 0px 10px;
+    justify-items: left;
+}
+
+.menu-release-notes-item {
+    border-bottom: 1px solid #f7fafc;
+    font-size: 10px;
 }
 
 .menu-sources-list {
