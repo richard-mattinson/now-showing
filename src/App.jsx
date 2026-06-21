@@ -8,6 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false); // for setting loading animations
   const [error, setError] = useState(""); // for setting api errors
   const [includeRentals, setRentalFlag] = useState(false); // for setting the include rentals flag
+  const [includeLovedOnly, setLovedOnlyFlag] = useState(false) // for setting the "Only Display Films on Loved Services" flag
   const [sortBy, setSortBy] = useState("dateAdded"); // for sorting the watchlist sort order
 
   // TODO: always set as FALSE before pushing
@@ -42,9 +43,12 @@ function App() {
 
   /////////////////////// RELEASE NOTES MENU ///////////////////////
 
-  const upcomingChanges = ["Per film leaving date tracking", "Last updated date in title bar", "Display availability on load (based on last check)"];
+  const versionNumber = "0.7"
+  const releaseDate = "2026-06-21"
 
-  const releaseNotes = ["Added Release Notes", "Added several services to Preferred Sources menu", "Added sorting by Added Date, Year and Title"];
+  const upcomingChanges = ["Last updated date in title bar", "Display availability on load (based on last check)"];
+
+  const releaseNotes = ["0.7 - Fixed Release Notes menu not closing", "0.7 - Added 'Loved Only' filter", "0.6 - Added Release Notes", "0.5 - Added services to Preferred Sources menu", "0.5 - Added sorting by Added Date, Year and Title"];
 
   // controls whether the release notes menu is open or closed
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
@@ -57,6 +61,8 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
+  console.log("saved sources", sourcePreferences);
+  
   // controls whether the gear menu menu is open or closed
   const [showSettings, setShowSettings] = useState(false);
 
@@ -228,7 +234,27 @@ function App() {
     setBatchLoading(false);
   };
 
-  /////////////////////// CLOSE POP UP MENU ///////////////////////
+  /////////////////////// CLOSE RELEASE NOTES MENU ///////////////////////
+
+  // close pop up menu if user clicks outside menu while it's open
+  useEffect(() => {
+    const closeMenu = (e) => {
+      // if the click came from the gear button or inside the menu, do nothing
+      if (e.target.closest(".control-info-btn") || e.target.closest(".global-release-notes-menu")) {
+        return;
+      }
+      // otherwise, close the menu
+      setShowReleaseNotes(false);
+    };
+
+    if (showReleaseNotes) {
+      window.addEventListener("click", closeMenu);
+    }
+
+    return () => window.removeEventListener("click", closeMenu);
+  }, [showReleaseNotes]);
+
+  /////////////////////// CLOSE SERVICE PREFERENCES MENU ///////////////////////
 
   // close pop up menu if user clicks outside menu while it's open
   useEffect(() => {
@@ -271,8 +297,10 @@ function App() {
         {/* /////////////////////// RELEASE NOTES MENU /////////////////////// */}
         {showReleaseNotes && (
           <div className="global-release-notes-menu">
-            <h5>Version 0.6 - 2026.06.16</h5>
-            <h4>Next Update</h4>
+            <h5>
+              Version {versionNumber} - {releaseDate}
+            </h5>
+            <h4>Planned Updates</h4>
             <div className="menu-release-notes-list">
               <ul>
                 {upcomingChanges.map((change) => {
@@ -280,7 +308,7 @@ function App() {
                 })}
               </ul>
             </div>
-            <h4>Current Update</h4>
+            <h4>Previous Updates</h4>
             <div className="menu-release-notes-list">
               <ul>
                 {releaseNotes.map((change) => {
@@ -370,7 +398,18 @@ function App() {
         </div>
       </div>
 
+        {/* /////////////////////// CHECK AVAILABILITY BUTTON /////////////////////// */}
+      <div id="check_movies_bar">
+        {watchlist.length > 0 && (
+          <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
+            {batchLoading ? "One moment..." : "Check Availability"}
+          </button>
+        )}
+      </div>
+
+      {/* /////////////////////// FILTER BAR /////////////////////// */}
       <div id="filter_bar">
+        {/* /////////////////////// INCLUDE RENTALS BUTTON /////////////////////// */}
         <div className="toggle-container">
           <label className="switch">
             <input type="checkbox" checked={includeRentals} onChange={(e) => setRentalFlag(e.target.checked)} />
@@ -378,11 +417,14 @@ function App() {
           </label>
           <span className="toggle-label">Include Rentals</span>
         </div>
-        {watchlist.length > 0 && (
-          <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
-            {batchLoading ? "One moment..." : "Check Availability"}
-          </button>
-        )}
+        {/* /////////////////////// INCLUDE ONLY LOVED SERVICES BUTTON /////////////////////// */}
+        <div className="toggle-container">
+          <label className="switch">
+            <input type="checkbox" checked={includeLovedOnly} onChange={(e) => setLovedOnlyFlag(e.target.checked)} />
+            <span className="slider round"></span>
+          </label>
+          <span className="toggle-label">Only Loved</span>
+        </div>
       </div>
 
       {/* /////////////////////// SORT WATCHLIST BUTTONS /////////////////////// */}
@@ -413,8 +455,7 @@ function App() {
                 if (sortBy === "dateAdded") {
                   return new Date(b.dateAdded) - new Date(a.dateAdded); // newest added first
                 } else if (sortBy === "name") {
-                  // a-z
-                  return a.name.localeCompare(b.name);
+                  return a.name.localeCompare(b.name); // a-z
                 } else if (sortBy === "year") {
                   return b.year - a.year; // newest year first (change to a.year - b.year for oldest first)
                 }
@@ -423,12 +464,15 @@ function App() {
               .map((movie) => {
                 const movieSources = watchlistAvailability[movie.id];
 
-                // filter sources based on preferences AND includeRentals toggle
+                // filter sources based on service preferences, includeRentals toggle & only loved toggle
                 const visibleSources = movieSources
                   ? movieSources.filter((source) => {
-                      const isNotDisliked = sourcePreferences[source.name.toLowerCase()] !== "disliked";
+                      // if loved only flag is set only show loved services, else show all non disliked services
+                      const sourceIsNotDisliked = includeLovedOnly ? sourcePreferences[source.name.toLowerCase()] === "loved" : sourcePreferences[source.name.toLowerCase()] !== "disliked";
+                      // if item is not a rental include it, else only include it if the includeRentals flag is set to true
                       const matchesRentalToggle = source.type !== "rent" || includeRentals;
-                      return isNotDisliked && matchesRentalToggle;
+
+                      return sourceIsNotDisliked && matchesRentalToggle;
                     })
                   : [];
 

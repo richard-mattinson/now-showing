@@ -171,6 +171,68 @@ ul, li {
     pointer-events: none;
 }
 
+/* ////////////// SEARCH BAR ////////////// */
+
+#track_movie_container {
+    position: sticky;
+    top: 0px;
+    padding: 10px 0 0 10px;
+    background: white;
+    border-bottom: 1px solid whitesmoke;
+}
+
+#search_bar {
+    margin: 0 0 10px 0;
+    font-family: "poppins";
+}
+
+#search_box {
+    font-size: 16px;
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 5px 0 0 5px;
+    font-family: "poppins";
+}
+
+#search_button {
+    font-size: 16px;
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 0 5px 5px 0;
+    background-color: rgb(106, 106, 106);
+    color: white;
+    font-family: "poppins";
+}
+
+/* ////////////// SEARCH RESULTS ////////////// */
+
+.search-results {
+    margin: 10px 0 0 0;
+}
+
+.search_result {
+    margin: 5px 0 0 0;
+}
+
+#track_button {
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 5px;
+    background-color: rgb(106, 106, 106);
+    color: white;
+    margin: 0 0 0 5px;
+}
+
+/* ////////////// FILTER BAR ////////////// */
+
+#filter_bar {
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    padding: 10px 0 0px 0;
+    background: #f8f9fa;
+}
+
 /* ////////////// RENTAL TOGGLE ////////////// */
 
 .toggle-container {
@@ -245,37 +307,12 @@ input:checked + .slider:before {
     color: #333;
 }
 
-/* ////////////// SEARCH BAR ////////////// */
+/* ////////////// CHECK AVAILABILITY BUTTON ////////////// */
 
-#track_movie_container {
-    position: sticky;
-    top: 0px;
-    padding: 10px 0 0 10px;
-    background: white;
-    border-bottom: 1px solid whitesmoke;
-}
-
-#search_bar {
-    margin: 0 0 10px 0;
-    font-family: "poppins";
-}
-
-#search_box {
-    font-size: 16px;
-    padding: 2px 5px;
-    border-width: 1px;
-    border-radius: 5px 0 0 5px;
-    font-family: "poppins";
-}
-
-#search_button {
-    font-size: 16px;
-    padding: 2px 5px;
-    border-width: 1px;
-    border-radius: 0 5px 5px 0;
-    background-color: rgb(106, 106, 106);
-    color: white;
-    font-family: "poppins";
+#check_movies_bar {
+    align-items: center;
+    padding: 10px 0 0px 0;
+    background: #f8f9fa;
 }
 
 #check_movies_button {
@@ -285,36 +322,9 @@ input:checked + .slider:before {
     border-radius: 10px;
     background-color: #428BCA;
     color: white;
-    margin: 0 10px 5px 0;
+    margin: 0 10px 5px auto;
     padding: 2px 10px 2px 10px;
     font-family: "poppins";
-}
-
-#filter_bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0 0px 0;
-    background: #f8f9fa;
-}
-
-/* ////////////// SEARCH RESULTS ////////////// */
-
-.search-results {
-    margin: 10px 0 0 0;
-}
-
-.search_result {
-    margin: 5px 0 0 0;
-}
-
-#track_button {
-    padding: 2px 5px;
-    border-width: 1px;
-    border-radius: 5px;
-    background-color: rgb(106, 106, 106);
-    color: white;
-    margin: 0 0 0 5px;
 }
 
 /* ////////////// WATCH LIST SORT BUTTONS ////////////// */
