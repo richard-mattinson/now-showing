@@ -223,6 +223,12 @@ ul, li {
     margin: 0 0 0 5px;
 }
 
+/* ////////////// CHECK AVAILABILITY ////////////// */
+
+#last_checked {
+    font-size: 12px;
+}
+
 /* ////////////// FILTER BAR ////////////// */
 
 #filter_bar {

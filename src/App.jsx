@@ -8,7 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false); // for setting loading animations
   const [error, setError] = useState(""); // for setting api errors
   const [includeRentals, setRentalFlag] = useState(false); // for setting the include rentals flag
-  const [includeLovedOnly, setLovedOnlyFlag] = useState(false) // for setting the "Only Display Films on Loved Services" flag
+  const [includeLovedOnly, setLovedOnlyFlag] = useState(false); // for setting the "Only Display Films on Loved Services" flag
   const [sortBy, setSortBy] = useState("dateAdded"); // for sorting the watchlist sort order
 
   // TODO: always set as FALSE before pushing
@@ -43,12 +43,20 @@ function App() {
 
   /////////////////////// RELEASE NOTES MENU ///////////////////////
 
-  const versionNumber = "0.7"
-  const releaseDate = "2026-06-21"
+  const versionNumber = "0.8";
+  const releaseDate = "2026-07-05";
 
-  const upcomingChanges = ["Last updated date in title bar", "Display availability on load (based on last check)"];
+  const upcomingChanges = ["I haven't got any at the moment... make a request!"];
 
-  const releaseNotes = ["0.7 - Fixed Release Notes menu not closing", "0.7 - Added 'Loved Only' filter", "0.6 - Added Release Notes", "0.5 - Added services to Preferred Sources menu", "0.5 - Added sorting by Added Date, Year and Title"];
+  const releaseNotes = [
+    "0.8 - Last updated date in title bar",
+    "0.8 - Display availability on load (based on last check)",
+    "0.7 - Fixed Release Notes menu not closing",
+    "0.7 - Added 'Loved Only' filter",
+    "0.6 - Added Release Notes",
+    "0.5 - Added services to Preferred Sources menu",
+    "0.5 - Added sorting by Added Date, Year and Title",
+  ];
 
   // controls whether the release notes menu is open or closed
   const [showReleaseNotes, setShowReleaseNotes] = useState(false);
@@ -62,7 +70,7 @@ function App() {
   });
 
   console.log("saved sources", sourcePreferences);
-  
+
   // controls whether the gear menu menu is open or closed
   const [showSettings, setShowSettings] = useState(false);
 
@@ -87,6 +95,9 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  let lastUpdated = watchlist[0].availabilityCheckedDate;
+  console.log("last", lastUpdated);
+
   // save watchlist to local storage whenever it changes
   useEffect(() => {
     localStorage.setItem("now-showing-watchlist", JSON.stringify(watchlist));
@@ -94,7 +105,23 @@ function App() {
 
   // store the streaming availability results for all checked movies
   // format: { [movieId]: [array of UK sources] }
-  const [watchlistAvailability, setWatchlistAvailability] = useState({});
+  const [watchlistAvailability, setWatchlistAvailability] = useState(() => {
+    const cachedResults = {};
+    const todayString = new Date().toISOString().split("T")[0];
+
+    // load last cached availability on load if available
+    if (Array.isArray(watchlist)) {
+      watchlist.forEach((movie) => {
+        if (movie.availabilityCheckedDate === todayString && movie.cachedAvailability) {
+          cachedResults[movie.id] = movie.cachedAvailability;
+        } else {
+          cachedResults[movie.id] = movie.cachedAvailability || [];
+        }
+      });
+    }
+
+    return cachedResults;
+  });
   const [batchLoading, setBatchLoading] = useState(false);
 
   // sync watchlist data array to local storage
@@ -175,7 +202,9 @@ function App() {
     setWatchlistAvailability(updatedAvailability);
   };
 
-  /////////////////////// CHECK WATCH LIST ///////////////////////
+  /////////////////////// CHECK WATCH LIST AVAILABILITY ///////////////////////
+
+  // loadCachedAvailabilityOnLoad()
 
   const checkAllUKAvailability = async () => {
     if (watchlist.length === 0) {
@@ -398,8 +427,10 @@ function App() {
         </div>
       </div>
 
-        {/* /////////////////////// CHECK AVAILABILITY BUTTON /////////////////////// */}
+      {/* /////////////////////// CHECK AVAILABILITY BUTTON /////////////////////// */}
+
       <div id="check_movies_bar">
+        <div id="last_checked">Last updated: {lastUpdated}</div>
         {watchlist.length > 0 && (
           <button onClick={checkAllUKAvailability} className="btn-check-all" id="check_movies_button" disabled={batchLoading}>
             {batchLoading ? "One moment..." : "Check Availability"}
